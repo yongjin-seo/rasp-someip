@@ -4,6 +4,7 @@ include $(TOPDIR)/misc/mk/config.mk
 include $(TOPDIR)/misc/mk/common-$(ARCH).mk
 
 LO_TARGET=	net.lo
+LO_TARGET+=     crc.lo
 
 LO_OBJS= 
 
@@ -11,6 +12,7 @@ LO_OBJS=
 DIRS=
 
 DIRS+= someip
+DIRS+= crc
 
 all: $(LO_TARGET)
 
