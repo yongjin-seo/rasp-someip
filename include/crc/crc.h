@@ -27,7 +27,7 @@ crc_64 crc64_table[256] = {0};
 bool is_reflect_result_;
 bool is_reflect_input_;
 
-void crc_init(crc _polynomial, bool _is_reflect_result, bool is_reflect_input, uint8_t _width);
+void init_crc(crc _polynomial, bool _is_reflect_result, bool is_reflect_input, uint8_t _width);
 
 crc_8 compute_crc8(uint8_t* _buffer, uint32_t _length);
 crc_16 compute_crc16(uint8_t* _buffer, uint32_t _length);
