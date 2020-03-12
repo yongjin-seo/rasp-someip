@@ -21,6 +21,20 @@ int someip_add_offering_service(someip_offering_service_t *service)
     return 0;
 }
 
+int someip_add_offering_event(someip_offering_service_t *service)
+{
+    someip_offering_service_t *srv = &srv_head;
+    someip_offering_service_t *same;
+
+    if(same = someip_find_offering_service(service->service_id, service->instance)) {
+        someip_del_offering_service(same);
+    }
+
+    service->next = srv->next;
+    srv->next = service;
+
+    return 0;
+}
 
 someip_offering_service_t *someip_find_offering_service(uint16_t service_id,
         uint16_t instance)
