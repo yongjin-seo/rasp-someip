@@ -1,18 +1,13 @@
-TOPDIR=		../..
+TOPDIR=		../../../
 
 include $(TOPDIR)/misc/mk/config.mk
 include $(TOPDIR)/misc/mk/common-$(ARCH).mk
 
-LO_TARGET=	net.lo
-LO_TARGET+=     crc.lo
+LO_TARGET=  crc.lo
 
-LO_OBJS= 
+LO_OBJS=   	crc.o 
 
-# common driver for all system
-DIRS=
 
-DIRS+= someip
-DIRS+= crc
 
 all: $(LO_TARGET)
 
