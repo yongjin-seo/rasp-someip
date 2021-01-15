@@ -180,6 +180,28 @@ void Someip_SendResponse(someip_requested_service_t *service, uint8 *payload, ui
 	Someip_SendPacket(&pduInfo, 1);
 }
 
+void Someip_SendRequest(someip_requested_service_t *service)
+{
+	uint8 buf[256];
+
+	someip_t *data = (someip_t *)buf;
+//	data->msg_id = htonl(make_message_id(service->service_id, service->instance));
+	data->length = htonl(0xd);
+	data->msg_id = htonl(MAKE_ID(service->service_id, service->method));
+	data->req_id = htonl(MAKE_ID(service->req->client_id, service->req->req_id));
+	data->protocol_ver = 0x1;
+	data->interface_ver = 0x0;
+	data->msg_type = 0x2;
+	data->ret_code = 0x0;
+
+	PduInfoType pduInfo;
+	pduInfo.SduDataPtr = (uint8 *)data;
+	pduInfo.SduLength = 8 + ntohl(data->length);
+	
+	strcpy(data->payload, "world");
+	Someip_SendPacket(&pduInfo, 2);
+}
+
 void Someip_RxIndication(PduIdType RxPduId, const PduInfoType *PduData)
 {
 	uint8 *data = PduData->SduDataPtr;
