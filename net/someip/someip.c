@@ -196,7 +196,8 @@ void Someip_RxIndication(PduIdType RxPduId, const PduInfoType *PduData)
 		NotifyId = MAKE_ID(id, event);
 		RequestId = MAKE_ID(id, method);
 		printf("%x %x %x\n", SomeipPtr->msg_id, NotifyId, RequestId);
-		if(ntohl(SomeipPtr->msg_id) == NotifyId)
+		if(ntohl(SomeipPtr->msg_type) == 0x2 
+                   && ntohl(SomeipPtr->msg_id) == NotifyId)
 		{
 			printf("[Someip] Get Notification\n");
 			someip_requested_service_t *service = someip_find_req_service(id, ClientId, instance);
@@ -204,7 +205,8 @@ void Someip_RxIndication(PduIdType RxPduId, const PduInfoType *PduData)
 				service->avail_handler(service);
 			Someip_SendRequest(service);
 		}
-		else if(ntohl(SomeipPtr->msg_id) == RequestId)
+		else if(ntohl(SomeipPtr->msg_type) == 0x0 
+                        && ntohl(SomeipPtr->msg_id) == RequestId)
 		{
 			printf("[Someip] Get Request\n");
 			someip_requested_service_t *service = someip_find_req_service(id, ClientId, instance);
