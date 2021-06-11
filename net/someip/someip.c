@@ -180,6 +180,48 @@ void Someip_SendResponse(someip_requested_service_t *service, uint8 *payload, ui
 	Someip_SendPacket(&pduInfo, 1);
 }
 
+void Someip_SendEvent(someip_requested_service_t *service)
+{
+	uint8 buf[256];
+
+	someip_t *data = (someip_t *)buf;
+//	data->msg_id = htonl(make_message_id(service->service_id, service->instance));
+	data->length = htonl(0xd);
+	data->msg_id = htonl(MAKE_ID(service->service_id, service->event_id));
+	data->req_id = htonl(MAKE_ID(service->req->client_id, service->req->req_id));
+	data->protocol_ver = 0x1;
+	data->interface_ver = 0x0;
+	data->msg_type = 0x2;
+	data->ret_code = 0x0;
+
+	PduInfoType pduInfo;
+	pduInfo.SduDataPtr = (uint8 *)data;
+	pduInfo.SduLength = 8 + ntohl(data->length);
+	
+	strcpy(data->payload, "world");
+	Someip_SendPacket(&pduInfo, 2);
+}
+
+void Someip_SendError(someip_requested_service_t *service, uint8 *payload, uint32 length)
+{
+	uint8 buf[256];
+	someip_t *data = (someip_t *)buf;
+	data->length = htonl(8 + length);
+	data->msg_id = htonl(MAKE_ID(service->service_id, service->method));
+	data->req_id = htonl(MAKE_ID(service->req->client_id, service->req->req_id));
+	data->protocol_ver = 0x1;
+	data->interface_ver = 0x0;
+	data->msg_type = 0x80;
+	data->ret_code = 0x1;
+
+	PduInfoType pduInfo;
+	pduInfo.SduDataPtr = (uint8 *)data;
+	pduInfo.SduLength = 8 + ntohl(data->length);
+	
+	strncpy(data->payload, payload, length);
+	Someip_SendPacket(&pduInfo, 1);
+}
+
 void Someip_RxIndication(PduIdType RxPduId, const PduInfoType *PduData)
 {
 	uint8 *data = PduData->SduDataPtr;
@@ -196,15 +238,17 @@ void Someip_RxIndication(PduIdType RxPduId, const PduInfoType *PduData)
 		NotifyId = MAKE_ID(id, event);
 		RequestId = MAKE_ID(id, method);
 		printf("%x %x %x\n", SomeipPtr->msg_id, NotifyId, RequestId);
-		if(ntohl(SomeipPtr->msg_id) == NotifyId)
+		if(ntohl(SomeipPtr->msg_type) == 0x2 
+                   && ntohl(SomeipPtr->msg_id) == NotifyId)
 		{
 			printf("[Someip] Get Notification\n");
 			someip_requested_service_t *service = someip_find_req_service(id, ClientId, instance);
 			if(service != NULL)
 				service->avail_handler(service);
-			Someip_SendRequest(service);
+			Someip_SendEvent(service);
 		}
-		else if(ntohl(SomeipPtr->msg_id) == RequestId)
+		else if(ntohl(SomeipPtr->msg_type) == 0x0 
+                        && ntohl(SomeipPtr->msg_id) == RequestId)
 		{
 			printf("[Someip] Get Request\n");
 			someip_requested_service_t *service = someip_find_req_service(id, ClientId, instance);
@@ -216,6 +260,11 @@ void Someip_RxIndication(PduIdType RxPduId, const PduInfoType *PduData)
 		else
 		{
 			printf("[Someip] Unknown Services\n");
+someip_requested_service_t *service = someip_find_req_service(id, ClientId, instance);
+			if(service != NULL)
+				service->avail_handler(service);
+
+			Someip_SendError(service, SomeipPtr->payload, ntohl(SomeipPtr->length) - 8);
 		}
 
 	}
