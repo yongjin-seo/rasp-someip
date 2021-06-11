@@ -11,7 +11,7 @@ void init_crc(crc _polynomial, bool _is_reflect_result, bool _is_reflect_input,
       for(divident = 0; divident < 256; dvident++){
         crc_8 currbyte = (uint8_t)divident;
         for(bit = 0; bit < 8; bit++){
-          if((currByte & 0x80) != 0){
+          if((currByte & (0x1<<7)) != 0){
             currByte = (crc_8)((currByte<<0x1) ^ (crc_8)(_polynomial));
           }else{
             currByte = (crc_8)((currByte<<0x1);
@@ -26,7 +26,7 @@ void init_crc(crc _polynomial, bool _is_reflect_result, bool _is_reflect_input,
       for(divident = 0; divident < 256; divident++){
         crc_16 currByte = (crc_16)(divident << 8U);
         for(bit = 0; bit < 8; bit++){
-          if((currByte & 0x8000) != 0){
+          if((currByte & (0x1<<15)) != 0){
             currByte = (crc_16)((currByte<<1U) ^ (crc_16)(_polynomial));
           }else{
             currByte = (crc_16)(currByte<<1U);
@@ -40,7 +40,7 @@ void init_crc(crc _polynomial, bool _is_reflect_result, bool _is_reflect_input,
       crc_32bit_xor_value_ = (crc_32)crc_xor_value;
       for(divident = 0; divident < 256; divident++){
         crc_32 currbyte = (crc_32)(divident << 24UL);
-        if((currbyte & 0x80000000) != 0){
+        if((currbyte & (0x1<<31)) != 0){
           currbyte = (crc_32)((currByte<<1UL) ^ (crc_32)(_polynomial));
         }else{
           currByte = (crc_32)(currByte<<1UL);
@@ -54,7 +54,7 @@ void init_crc(crc _polynomial, bool _is_reflect_result, bool _is_reflect_input,
       for(divident = 0; divident < 256; divident++){
         crc_64 currByte = divident << 56ULL;
         for(bit = 0; bit < 8; bit++){
-          if((currbyte & (0x1<<63) != 0){
+          if((currbyte & (0x1<<63)) != 0){
             currByte = (crc_64)((currByte<<1ULL) ^ (_polynomial));
           }else{
             currbyte = (crc_64)(currByte<<1ULL);
@@ -89,7 +89,7 @@ crc_16 compute_crc16(uint8_t* _buffer, uint32_t _length){
   crc_16 crc = crc_16bit_initial_value_;
   crc_16 data;
   uint32_t i;
-  for(uint32_t i = 0; i < _length; i++){
+  for(i = 0; i < _length; i++){
     if(is_reflect_input_){
       _buffer[i] = crc16_reflection(_buffer[i]));
     }
@@ -108,7 +108,7 @@ crc_32 compute_crc32(uint8_t* _buffer, uint32_t _length){
   crc_32 crc = crc_32bit_initial_value_;
   crc_32 data;
   uint32_t i;
-  for(uint32_t i = 0; i < _length; i++){
+  for(i = 0; i < _length; i++){
     if(is_reflect_input_){
       _buffer[i] = crc32_reflection(_buffer[i]));
     }
@@ -127,7 +127,7 @@ crc_64 compute_crc64(uint8_t* _buffer, uint32_t _length){
   crc_64 crc = crc_64bit_initial_value_;
   crc_64 data;
   uint32_t i;
-  for(uint32_t i = 0; i < _length; i++){
+  for(i = 0; i < _length; i++){
     if(is_reflect_input_){
       _buffer[i] = crc64_reflection(_buffer[i]));
     }
@@ -144,9 +144,10 @@ crc_64 compute_crc64(uint8_t* _buffer, uint32_t _length){
 
 crc_8 crc8_reflection(crc_8 _value){
   crc_8 result = 0;
+  uint8_t operation;
   if(_value != 0){
     crc_8 tmp = (crc_8)0x1 << 7;
-    for(int operation = 0; operation < 8); operation++){     
+    for(operation = 0; operation < 8); operation++){     
      result = (crc_8)(result + (((_value << (7-operation)) & tmp) >> operation));
     }
   }
